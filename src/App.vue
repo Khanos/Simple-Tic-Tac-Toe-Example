@@ -1,17 +1,46 @@
 <template>
   <div id="app">
-    <img alt="Vue logo" src="./assets/logo.png">
-    <HelloWorld msg="Welcome to Your Vue.js App"/>
+    <Header/>
+    <Board/>
+    <Footer v-bind:currentPlayer="currentPlayer" v-bind:handleRestartGame="handleRestartGame"/>
   </div>
 </template>
 
 <script>
-import HelloWorld from './components/HelloWorld.vue'
+import Header from './components/Header.vue'
+import Board from './components/Board.vue'
+import Footer from './components/Footer.vue'
 
 export default {
   name: 'App',
+  data: () => ({
+    gameActive: true,
+    currentPlayer: 'X',
+    gameState: ["", "", "", "", "", "", "", "", ""],
+    winningConditions: [
+      [0, 1, 2],
+      [3, 4, 5],
+      [6, 7, 8],
+      [0, 3, 6],
+      [1, 4, 7],
+      [2, 5, 8],
+      [0, 4, 8],
+      [2, 4, 6]
+    ],
+  }),
   components: {
-    HelloWorld
+    Header,
+    Board,
+    Footer,
+  },
+  methods: {
+    handleRestartGame: function() {
+        this.gameActive = true;
+        this.currentPlayer = "X";
+        this.gameState = ["", "", "", "", "", "", "", "", ""];
+        console.log("In Handle Restart");
+        document.querySelectorAll('.cell').forEach(cell => cell.innerHTML = "");
+    },
   }
 }
 </script>
@@ -24,5 +53,8 @@ export default {
   text-align: center;
   color: #2c3e50;
   margin-top: 60px;
+}
+section {
+    text-align: center;
 }
 </style>
