@@ -1,8 +1,16 @@
 <template>
   <div id="app">
     <Header/>
-    <Board/>
-    <Footer v-bind:currentPlayer="currentPlayer" v-bind:handleRestartGame="handleRestartGame"/>
+    <Board
+      v-bind:gameState="gameState"
+      v-bind:gameActive="gameActive"
+      v-bind:currentPlayer="currentPlayer"
+    />
+    <Footer
+      v-bind:currentPlayer="currentPlayer"
+      v-bind:handleRestartGame="handleRestartGame"
+      v-binf:gameActive="gameActive"
+    />
   </div>
 </template>
 
