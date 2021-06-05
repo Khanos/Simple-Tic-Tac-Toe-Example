@@ -2,14 +2,15 @@
   <div id="app">
     <Header/>
     <Board
+      v-bind:winningConditions="winningConditions"
       v-bind:gameState="gameState"
-      v-bind:gameActive="gameActive"
+      v-bind:gameStatus="gameStatus"
       v-bind:currentPlayer="currentPlayer"
     />
     <Footer
       v-bind:currentPlayer="currentPlayer"
-      v-bind:handleRestartGame="handleRestartGame"
-      v-binf:gameActive="gameActive"
+      v-bind:gameStatus="gameStatus"
+      v-bind:gameState="gameState"
     />
   </div>
 </template>
@@ -22,8 +23,12 @@ import Footer from './components/Footer.vue'
 export default {
   name: 'App',
   data: () => ({
-    gameActive: true,
-    currentPlayer: 'X',
+    gameStatus: {
+      value: 'playing'
+    },
+    currentPlayer: {
+      value: 'X'
+    },
     gameState: ["", "", "", "", "", "", "", "", ""],
     winningConditions: [
       [0, 1, 2],
@@ -40,15 +45,6 @@ export default {
     Header,
     Board,
     Footer,
-  },
-  methods: {
-    handleRestartGame: function() {
-        this.gameActive = true;
-        this.currentPlayer = "X";
-        this.gameState = ["", "", "", "", "", "", "", "", ""];
-        console.log("In Handle Restart");
-        document.querySelectorAll('.cell').forEach(cell => cell.innerHTML = "");
-    },
   }
 }
 </script>

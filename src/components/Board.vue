@@ -1,7 +1,7 @@
 <template>
   <div class="board">
     <div class="game--container">
-        <div v-for="n in 9" :key="n" v-on:click="handleCellClick" :data-cell-index="n" class="cell"></div>
+        <div v-for="n in 9" :key="n" v-on:click="handleCellClick" :data-cell-index="n-1" class="cell"></div>
     </div>
   </div>
 </template>
@@ -10,9 +10,10 @@
 export default {
   name: 'Board',
   props: {
+    winningConditions: Array,
     gameState: Array,
-    gameActive: Boolean,
-    currentPlayer: String
+    gameStatus: Object,
+    currentPlayer: Object
   },
   methods: {
     handleCellClick: function(clickedCellEvent) {
@@ -21,18 +22,21 @@ export default {
       const clickedCellIndex = parseInt(clickedCell.getAttribute('data-cell-index'));
 
       // Checking if is not already played or the game is finish
-      if (this.gameState[clickedCellIndex] !== "" || !this.gameActive) {
+      if (this.gameState[clickedCellIndex] !== "" || this.gameStatus.value !== 'playing') {
           return;
       }
 
       this.handleCellPlayed(clickedCell, clickedCellIndex);
-      //handleResultValidation();
+      this.handleResultValidation();
     },
     handleCellPlayed: function(clickedCell, clickedCellIndex) {
-      this.gameState[clickedCellIndex] = this.currentPlayer;
-      clickedCell.innerHTML = this.currentPlayer;
+      // Saving the CurrentPlayer into the gameState
+      this.gameState[clickedCellIndex] = this.currentPlayer.value;
+      // Adding the value to the dom
+      clickedCell.innerHTML = this.currentPlayer.value;
     },
     handleResultValidation: function () {
+      // Comparing the current positions with the @winningConditions Array to check for @roundWon
       let roundWon = false;
       for (let i = 0; i <= 7; i++) {
         const winCondition = this.winningConditions[i];
@@ -47,24 +51,22 @@ export default {
           break
         }
       }
-      const roundDraw = !this.gameState.includes("");
 
       if (roundWon) {
-        this.gameActive = false;
-        if (roundDraw) {
-          // TODO statusDisplay.innerHTML = drawMessage();
-          this.gameActive = false;
-          return;
-        }
+        this.gameStatus.value = 'finish';
         return;
       }
 
-
+      const roundDraw = !this.gameState.includes("");
+      if (roundDraw) {
+        this.gameStatus.value = 'draw';
+        return;
+      }
 
       this.handlePlayerChange();
     },
     handlePlayerChange: function() {
-      this.currentPlayer = this.currentPlayer === "X" ? "O" : "X";
+      this.currentPlayer.value = this.currentPlayer.value === "X" ? "O" : "X";
     }
   }
 }
