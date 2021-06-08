@@ -108,6 +108,7 @@ export default {
     0 0 2.8rem var(--neon-purple-font-color),
     inset 0 0 1.3rem var(--neon-purple-font-color);
 }
+@import url('https://fonts.googleapis.com/css2?family=Roboto&display=swap');
 html{
   background: var(--main-bg-color);
 }
@@ -120,12 +121,11 @@ html{
   text-shadow: var(--neon-red-shadow);
 }
 #app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
+  font-family: Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
   color: var(--main-font-color);
-  margin-top: 2rem;
 }
 section {
     text-align: center;

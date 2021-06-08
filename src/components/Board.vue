@@ -45,8 +45,8 @@ export default {
       if (typeof this.gameState[currentSpanId] == 'number') {
         this.handlePlay(currentSpanId, this.huPlayer.value)
         if (!this.handleResultValidation(this.gameState, this.huPlayer.value) && !this.checkDraw()) {
+          const aiGeneratedMove = this.getAIBestMove(this.gameState, this.aiPlayer.value);
           setTimeout(()=> {
-            const aiGeneratedMove = this.getAIBestMove(this.gameState, this.aiPlayer.value);
             this.handlePlay(aiGeneratedMove.index, this.aiPlayer.value);
           }, 300);
         }
@@ -112,12 +112,12 @@ export default {
           score: 0
         };
       }
-      var moves = [];
+      const moves = [];
       for (let i = 0; i < availSpots.length; i++) {
-        var move = {};
+        const move = {};
+        let result;
         move.index = availSpots[i];
         newBoard[availSpots[i]] = player;
-        let result;
         if (player == this.aiPlayer.value) {
           result = this.getAIBestMove(newBoard, this.huPlayer.value);
           move.score = result.score;
@@ -147,7 +147,6 @@ export default {
           }
         }
       }
-
       return moves[bestMove];
     }
   },
@@ -172,7 +171,7 @@ export default {
     margin: 1rem auto;
 }
 .cell {
-    font-family: "Permanent Marker", cursive;
+    font-family: 'Roboto', cursive;
     width: 6rem;
     height: 6rem;
     cursor: pointer;
