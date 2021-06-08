@@ -1,7 +1,7 @@
 <template>
   <div class="footer">
 
-    <h2 v-if="gameStatus.value === 'playing'" class="game--status">It's {{ currentPlayer.value }}'s turn</h2>
+    <h2 v-if="gameStatus.value === 'playing'" class="game--status">{{ currentPlayer.value === 'X' ? `It's your turn Human.` : `Now it's my turn.` }}</h2>
     <h2 v-if="gameStatus.value === 'finish'" class="game--status">Player {{ currentPlayer.value }} has won!</h2>
     <h2 v-if="gameStatus.value === 'draw'" class="game--status">Game ended in a draw!</h2>
     <button class="game--restart neon-button" v-on:click="handleRestartGame">Restart</button>
@@ -20,7 +20,7 @@ export default {
     handleRestartGame: function() {
         this.currentPlayer.value = "X";
         this.gameStatus.value = 'playing';
-        Object.assign(this.gameState, ["", "", "", "", "", "", "", "", ""]);
+        Object.assign(this.gameState, [0,1,2,3,4,5,6,7,8]);
         document.querySelectorAll('.cell-value').forEach(cell => {
           cell.innerHTML = "";
           cell.className = "cell-value";

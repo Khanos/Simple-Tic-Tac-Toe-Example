@@ -1,8 +1,8 @@
 <template>
   <div class="board">
     <div class="game--container">
-        <div v-for="n in 9" :key="n" v-on:click="handleCellClick" :data-cell-index="n-1" class="cell" v-bind:style="handleCellStyle(n)">
-          <span :data-value-index="n-1" class="cell-value"></span>
+        <div v-for="n in 9" :key="n" v-on:click="handleCellClick" class="cell" v-bind:style="handleCellStyle(n)">
+          <span :id="n-1" class="cell-value"></span>
         </div>
     </div>
   </div>
@@ -15,7 +15,9 @@ export default {
     winningConditions: Array,
     gameState: Array,
     gameStatus: Object,
-    currentPlayer: Object
+    currentPlayer: Object,
+    huPlayer: Object,
+    aiPlayer: Object
   },
   methods: {
     handleCellStyle: function(n){
@@ -35,66 +37,118 @@ export default {
       }
     },
     handleCellClick: function(clickedCellEvent) {
-      // Getting the clicked cell element
-      const clickedCell = clickedCellEvent.target;
-      const clickedCellIndex = parseInt(clickedCell.getAttribute('data-cell-index'));
-
-      // Checking if is not already played or the game is finish
-      if (this.gameState[clickedCellIndex] !== "" || this.gameStatus.value !== 'playing') {
-          return;
-      }
-
-      this.handleCellPlayed(clickedCell, clickedCellIndex);
-      this.handleResultValidation();
-    },
-    handleCellPlayed: function(clickedCell, clickedCellIndex) {
-      // Saving the CurrentPlayer into the gameState
-      this.gameState[clickedCellIndex] = this.currentPlayer.value;
-      // Adding the value and style to the dom
-      let span = clickedCell.firstElementChild;
-      span.classList.add(`player-${this.currentPlayer.value}`)
-      span.innerHTML = this.currentPlayer.value;
-    },
-    handleResultValidation: function () {
-      // Comparing the current positions with the @winningConditions Array to check for @roundWon
-      let roundWon = false;
-      let winCondition;
-      for (let i = 0; i <= 7; i++) {
-        winCondition = this.winningConditions[i];
-        const a = this.gameState[winCondition[0]];
-        const b = this.gameState[winCondition[1]];
-        const c = this.gameState[winCondition[2]];
-        if (a === '' || b === '' || c === '') {
-          continue;
-        }
-        if (a === b && b === c) {
-          roundWon = true;
-          break
-        }
-      }
-
-      if (roundWon) {
-        this.handlePayerWin(winCondition);
+      if(this.currentPlayer.value === this.aiPlayer.value || this.gameStatus.value !== 'playing'){
         return;
       }
-
-      const roundDraw = !this.gameState.includes("");
-      if (roundDraw) {
-        this.gameStatus.value = 'draw';
-        return;
+      const currentSpan = clickedCellEvent.target.firstElementChild;
+      const currentSpanId = Number(currentSpan.getAttribute('id'));
+      if (typeof this.gameState[currentSpanId] == 'number') {
+        this.handlePlay(currentSpanId, this.huPlayer.value)
+        if (!this.handleResultValidation(this.gameState, this.huPlayer.value) && !this.checkDraw()) {
+          setTimeout(()=> {
+            const aiGeneratedMove = this.getAIBestMove(this.gameState, this.aiPlayer.value);
+            this.handlePlay(aiGeneratedMove.index, this.aiPlayer.value);
+          }, 300);
+        }
       }
-      this.handlePlayerChange();
     },
-    handlePayerWin: function (winCondition) {
-      const winner = winCondition;
+    handlePlay: function(cellId, player) {
+      // Adding the played Value to the gameState
+      this.gameState[cellId] = this.currentPlayer.value;
+      document.getElementById(cellId).classList.add(`player-${this.currentPlayer.value}`)
+      document.getElementById(cellId).innerText = player;
+      // Changing the current player
+      let gameWon = this.handleResultValidation(this.gameState, player)
+      if (gameWon) {
+        this.handlePayerWin(gameWon)
+        return
+      }
+      this.currentPlayer.value = this.currentPlayer.value === "X" ? "O" : "X";
+    },
+    handleResultValidation: function (board, player) {
+      let plays = board.reduce((a, e, i) =>
+        (e === player) ? a.concat(i) : a, []);
+      let gameWon = null;
+      for (let [index, win] of this.winningConditions.entries()) {
+        if (win.every(elem => plays.indexOf(elem) > -1)) {
+          gameWon = {index: index, player: player};
+          break;
+        }
+      }
+      return gameWon;
+    },
+    handlePayerWin: function (gameWon) {
+      const winCondition = this.winningConditions[gameWon.index];
+      const player = gameWon.player;
       document.querySelectorAll('.cell-value').forEach(cell => {
-        cell.classList.add(winner.includes(Number(cell.getAttribute('data-value-index'))) ? 'winner' : 'looser');
+        cell.classList.add(winCondition.includes(Number(cell.getAttribute('id'))) ? 'winner' : 'looser');
       });
-      document.querySelector('.game--status').classList.add(`player-${this.currentPlayer.value}`);
+      document.querySelector('.game--status').classList.add(`player-${player}`);
       this.gameStatus.value = 'finish';
     },
-    handlePlayerChange: function() {
-      this.currentPlayer.value = this.currentPlayer.value === "X" ? "O" : "X";
+    checkDraw: function() {
+      if (this.getEmptyCells().length == 0) {
+        this.gameStatus.value = 'draw';
+        return true;
+      }
+      return false;
+    },
+    getEmptyCells: function() {
+      return this.gameState.filter(s => {if(typeof s == 'number'){return s-1}});
+    },
+    getAIBestMove: function(newBoard, player) {
+      const availSpots = this.getEmptyCells();
+
+      if (this.handleResultValidation(newBoard, this.huPlayer.value)) {
+        return {
+          score: -10
+        };
+      } else if (this.handleResultValidation(newBoard, this.aiPlayer.value)) {
+        return {
+          score: 10
+        };
+      } else if (availSpots.length === 0) {
+        return {
+          score: 0
+        };
+      }
+      var moves = [];
+      for (let i = 0; i < availSpots.length; i++) {
+        var move = {};
+        move.index = availSpots[i];
+        newBoard[availSpots[i]] = player;
+        let result;
+        if (player == this.aiPlayer.value) {
+          result = this.getAIBestMove(newBoard, this.huPlayer.value);
+          move.score = result.score;
+        } else {
+          result = this.getAIBestMove(newBoard, this.aiPlayer.value);
+          move.score = result.score;
+        }
+        newBoard[availSpots[i]] = move.index;
+        moves.push(move);
+      }
+      let bestMove;
+      let bestScore;
+      if (player === this.aiPlayer.value) {
+        bestScore = -10000;
+        for (let i = 0; i < moves.length; i++) {
+          if (moves[i].score > bestScore) {
+            bestScore = moves[i].score;
+            bestMove = i;
+          }
+        }
+      } else {
+        bestScore = 10000;
+        for (let i = 0; i < moves.length; i++) {
+          if (moves[i].score < bestScore) {
+            bestScore = moves[i].score;
+            bestMove = i;
+          }
+        }
+      }
+
+      return moves[bestMove];
     }
   },
 }

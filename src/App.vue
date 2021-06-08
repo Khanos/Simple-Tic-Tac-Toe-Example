@@ -6,6 +6,8 @@
       v-bind:gameState="gameState"
       v-bind:gameStatus="gameStatus"
       v-bind:currentPlayer="currentPlayer"
+      v-bind:huPlayer="huPlayer"
+      v-bind:aiPlayer="aiPlayer"
     />
     <Footer
       v-bind:currentPlayer="currentPlayer"
@@ -29,7 +31,13 @@ export default {
     currentPlayer: {
       value: 'X'
     },
-    gameState: ["", "", "", "", "", "", "", "", ""],
+    huPlayer: {
+      value: 'X'
+    },
+    aiPlayer: {
+      value: 'O'
+    },
+    gameState: [0,1,2,3,4,5,6,7,8],
     winningConditions: [
       [0, 1, 2],
       [3, 4, 5],
